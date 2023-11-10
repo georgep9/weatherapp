@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\layers-2x.png" />
+    <None Include="wwwroot\images\layers.png" />
+    <None Include="wwwroot\images\marker-icon-2x.png" />
+    <None Include="wwwroot\images\marker-icon.png" />
+    <None Include="wwwroot\images\marker-shadow.png" />
+    <None Include="wwwroot\leaflet-src.esm.js" />
+    <None Include="wwwroot\leaflet-src.esm.js.map" />
+    <None Include="wwwroot\leaflet-src.js" />
+    <None Include="wwwroot\leaflet-src.js.map" />
+    <None Include="wwwroot\leaflet.css" />
+    <None Include="wwwroot\leaflet.js" />
+    <None Include="wwwroot\leaflet.js.map" />
+  </ItemGroup>
+
+</Project>

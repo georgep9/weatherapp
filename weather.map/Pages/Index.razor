@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject IJSRuntime JS
+
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+    <script src="/leaflet.js" type="module"></script>
+    <script src="/HeatLayer.js" type="module"></script>
+    <script type="module">
+        window.loadMap = () => {
+            
+            var map = leaflet.map('map').setView([-27.4705, 153.0260], 13);
+            L.tileLayer("https://{s}.tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU", {
+                attribution:
+                    '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                accessToken: '2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU'
+            }).addTo(map);
+        }
+    </script>
+</head>
+
+<div id="map"></div>
+<script src="/leafletMap.js" type="module">
+</script>
+@inject IJSRuntime JS
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadMap");
+
+        }
+    }
+}
