@@ -10,6 +10,11 @@
     <script src="/leaflet.js" type="module"></script>
     <script src="/HeatLayer.js" type="module"></script>
     <script type="module">
+        var GLOBAL = {};
+        GLOBAL.DotNetReference = null;
+        window.setDotnetReference = (pDotNetReference) => {
+            GLOBAL.DotNetReference = pDotNetReference;
+        };
         window.loadMap = (lat, long) => {  
             var map = leaflet.map('map').setView([lat, long], 13);
             L.tileLayer("https://{s}.tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU", {
@@ -17,10 +22,19 @@
                     '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 accessToken: '2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU'
             }).addTo(map);
+            map.on("moveend", () => {
+                var latlng = map.getCenter();
+                GLOBAL.DotNetReference.invokeMethodAsync("UpdateWeatherData", latlng.lng, latlng.lat);
+            });
+        }
+    </script>
+    <script>
+        window.getData = (data) => {
+            document.getElementById("data").innerHTML = data;
         }
     </script>
 </head>
-
+<p id="data"></p>
 <div id="map"></div>
 <script src="/leafletMap.js" type="module">
 </script>
@@ -28,28 +42,63 @@
 @inject IJSRuntime JS
 @code {
     private string? weatherData;
-    private double currLongitude = 153.0260;
-    private double currLatitude = -27.4705;
+    private double defaultLongitude = 153.0260;
+    private double defaultLatitude = -27.4705;
+    private OpenWeatherAPI openWeatherAPI;
 
-    private async Task RequestWeatherData()
+    public class OpenWeatherAPI
     {
-        var request = new HttpRequestMessage(HttpMethod.Get,
-            $"https://api.openweathermap.org/data/2.5/weather?lat={currLatitude}&lon={currLongitude}&appid=6718004e99fa5e8a92fd526818590b15");
-        request.Headers.Add("Accept", "application/json");
+        private string? weatherData;
+        private double longtitude;
+        private double latitude;
 
-        HttpClient client = new HttpClient();
-        var response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-        string responseBody = await response.Content.ReadAsStringAsync();
-        weatherData = responseBody;
+        public OpenWeatherAPI(double longitude, double latitude)
+        {
+            this.SetLongitudeLatitude(longitude, latitude);
+        }
+
+        public void SetLongitudeLatitude(double longitude, double latitude)
+        {
+            this.longtitude = longitude;
+            this.latitude = latitude;
+        }
+
+        public async Task FetchWeatherData()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get,
+            $"https://api.openweathermap.org/data/2.5/weather?lat={this.latitude}&lon={this.longtitude}&appid=6718004e99fa5e8a92fd526818590b15");
+            request.Headers.Add("Accept", "application/json");
+
+            HttpClient client = new HttpClient();
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            this.weatherData = responseBody;
+        }
+
+        public string? WeatherData() => this.weatherData;
+    }
+
+    [JSInvokableAttribute]
+    public async Task UpdateWeatherData(double longitude, double latitude)
+    {
+        openWeatherAPI.SetLongitudeLatitude(longitude, latitude);
+        await openWeatherAPI.FetchWeatherData();
+        string? data = openWeatherAPI.WeatherData();
+        await JS.InvokeVoidAsync("getData", data);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("loadMap", currLatitude, currLongitude);
-            await RequestWeatherData();
+            var lDotNetReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("setDotnetReference", lDotNetReference);
+            await JS.InvokeVoidAsync("loadMap", defaultLatitude, defaultLongitude);
+            openWeatherAPI = new OpenWeatherAPI(defaultLongitude, defaultLatitude);
+            await openWeatherAPI.FetchWeatherData();
+            string? data = openWeatherAPI.WeatherData();
+            await JS.InvokeVoidAsync("getData", data);
         }
-    }
+    } 
 }
