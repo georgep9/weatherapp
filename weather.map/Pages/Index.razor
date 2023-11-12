@@ -40,13 +40,13 @@
             document.getElementById("weather-data-hl").innerHTML = "H:" + Math.round(currentData.main.temp_max - 273.15) + "° L:" + Math.round(currentData.main.temp_min - 273.15) + "°";
             var forecastData = JSON.parse(forecastData);
             var forecastLimit = 24; // forecast 24 hours
-            var table = document.getElementById("forecast-data-table");
-            table.innerHTML = "<tr></tr><tr></tr><tr></tr>";
+            var foracastTable = document.getElementById("hourly-forecast-data-table");
+            foracastTable.innerHTML = "<tr></tr><tr></tr><tr></tr>";
             for (let i = 0; i < forecastLimit; i++) {
                 var data = forecastData.list[i];
-                var timeCell = table.rows[0].insertCell(i);
-                var iconCell = table.rows[1].insertCell(i);
-                var tempCell = table.rows[2].insertCell(i);
+                var timeCell = foracastTable.rows[0].insertCell(i);
+                var iconCell = foracastTable.rows[1].insertCell(i);
+                var tempCell = foracastTable.rows[2].insertCell(i);
                 var date = new Date(data.dt * 1000);
                 var hours = date.getHours();
                 var minutes = "0" + date.getMinutes();
@@ -54,6 +54,25 @@
                 timeCell.innerText = formattedTime;
                 iconCell.innerHTML = "<img src='https://openweathermap.org/img/wn/" + data.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
                 tempCell.innerText = Math.round(data.main.temp - 273.15) + "°C";
+            }
+            var dailyForecastData = JSON.parse(dailyForecastData);
+            var dailyForecastTable = document.getElementById("daily-forecast-data-table");
+            dailyForecastTable.innerHTML = "";
+            for (let i = 0; i < dailyForecastData.list.length; i++) {
+                var data = dailyForecastData.list[i];
+                console.log(data);
+                console.log(data.weather[0].icon);
+                var row = dailyForecastTable.insertRow(0);
+                var timeCell = row.insertCell(0);
+                var iconCell = row.insertCell(1);
+                var tempCell = row.insertCell(2);
+                var date = new Date(data.dt * 1000);
+                var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                var day = days[date.getDay()];
+                timeCell.innerText = day;
+                iconCell.innerHTML = "<img src='https://openweathermap.org/img/wn/" + data.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
+                tempCell.innerText = Math.round(data.temp.day - 273.15) + "°C";
+
             }
         }
     </script>
@@ -66,14 +85,26 @@
         <div id="weather-data-desc"></div>
         <div id="weather-data-hl"></div>
     </div>
-    <div id="forecast-data">
-        <h4>Hourly Forecast</h4>
-        <table id="forecast-data-table" class="center">
-            <tr></tr>
-            <tr></tr>
-            <tr></tr>
-        </table>
+    <div id="daily-forecast">
+        <h4>Daily Forecast</h4>
+        <div id="daily-forecast-data">
+            <table id="daily-forecast-data-table" class="center">
+                <tr><td></td><td></td><td></td><td></td></tr>
+            </table>
+        </div>
     </div>
+    
+    <div id="hourly-forecast">
+        <h4>Hourly Forecast</h4>
+        <div id="hourly-forecast-data">
+            <table id="hourly-forecast-data-table" class="center">
+                <tr></tr>
+                <tr></tr>
+                <tr></tr>
+            </table>
+        </div>
+    </div>
+    
     
     <div id="map"></div>
 </div>
