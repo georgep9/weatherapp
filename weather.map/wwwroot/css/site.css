@@ -162,6 +162,11 @@
     max-width: 230px;
 }
 
+#tooltip-data {
+    text-align: center;
+    width: 150px;
+}
+
 /* hide scrollbar but allow scrolling */
 #daily-forecast-data {
     -ms-overflow-style: none; /* for Internet Explorer, Edge */

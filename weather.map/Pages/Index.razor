@@ -18,8 +18,9 @@
 
         var map;
         var mapLayers = {
-            "PRO": null,
+            "APM": null,
             "HRD0": null,
+            "PR0": null,
             "CL": null
         }
 
@@ -36,12 +37,13 @@
                     '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 accessToken: '2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU'
             }).addTo(map);
-            addMapLayer("PR0");
             addMapLayer("CL");
             map.on("moveend", () => {
                 var latlng = map.getCenter();
                 GLOBAL.DotNetReference.invokeMethodAsync("UpdateWeatherData", latlng.lng, latlng.lat);
             });
+
+            map.on('click', InsertToolTip);
         }
 
         window.checkboxInputHandler = (element) => {
@@ -54,9 +56,6 @@
             }
         }
 
-    </script>
-
-    <script>
         function formatAMPM(date) {
             var hours = date.getHours();
             var minutes = date.getMinutes();
@@ -120,6 +119,21 @@
             }
         }
 
+        async function InsertToolTip(e) {
+            var locationData = JSON.parse(await GLOBAL.DotNetReference.invokeMethodAsync("InsertPopupWeatherData", e.latlng.lng, e.latlng.lat));
+            var newMarker = new L.popup(e.latlng, { content:
+                    "<div id='tooltip-data'>" +
+                    "<div><b>" + locationData.name + "</b></div>" +
+                    "<img src='https://openweathermap.org/img/wn/" + locationData.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>" +
+                    "<h1>" + Math.round(locationData.main.temp - 273.15) + "°C" + "</h1>" +
+                    "<div>" + locationData.weather[0].description + "</div>" +
+                    "<div>" + "H: " + Math.round(locationData.main.temp_max - 273.15) + "° L: " + Math.round(locationData.main.temp_min - 273.15) + "°" + "</div>" +
+                    "<div>Humidity: " + locationData.main.humidity + "%</div>" +
+                    "<div>Pressure: " + locationData.main.pressure + "hPa</div>" +
+                    "</div>"
+                    }).openOn(map);
+        }
+
         window.updateData = (currentData, hourlyForecastData, dailyForecastData) => {
             UpdateCurrentData(currentData);
             UpdateHourlyForecastData(hourlyForecastData);
@@ -145,17 +159,19 @@
     </div>
     <div id="map-layers-checkbox">
         <h4>Map Layers</h4>
-        <input type="checkbox" id="precipitation-intensity-chkbox" value="PR0" checked="true" onclick="checkboxInputHandler(this)" />
-        <label for="precipitation-intensity-chkbox">Precipitation intensity</label><br>
+        <input type="checkbox" id="atmospheric-pressure-chkbox" value="APM" onclick="checkboxInputHandler(this)" />
+        <label for="atmospheric-pressure-chkbox">Atmospheric pressure</label><br>
         <input type="checkbox" id="relative-humidity-chkbox" value="HRD0" onclick="checkboxInputHandler(this)" />
         <label for="relative-humidity-chkbox">Relative Humidity</label><br>
+        <input type="checkbox" id="precipitation-intensity-chkbox" value="PR0" onclick="checkboxInputHandler(this)" />
+        <label for="precipitation-intensity-chkbox">Precipitation intensity</label><br>
         <input type="checkbox" id="cloudiness-chkbox" value="CL" checked="true" onclick="checkboxInputHandler(this)" />
         <label for="cloudiness-chkbox">Cloudiness</label>
     </div>
     <div id="weather-data-extra">
         <div id="weather-data-extra-feels-like"></div>
-        <div id="weather-data-extra-pressure"></div>
         <div id="weather-data-extra-humidity"></div>
+        <div id="weather-data-extra-pressure"></div>
         <div id="weather-data-extra-sunset"></div>
         <div id="weather-data-extra-sunrise"></div>
     </div>
@@ -215,10 +231,15 @@
             return responseBody;
         }
 
+        public async Task<string> FetchLocationData(double longitude, double latitude)
+        {
+            var requestUri = $"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={this.apiKey}";
+            return await SendHttpRequest(requestUri);
+        }
+
         private async Task FetchCurrentData()
         {
-            var requestUri = $"https://api.openweathermap.org/data/2.5/weather?lat={this.latitude}&lon={this.longtitude}&appid={this.apiKey}";
-            this.currentData = await SendHttpRequest(requestUri);
+            this.currentData = await FetchLocationData(this.longtitude, this.latitude);
         }
 
         private async Task FetchForecastData()
@@ -257,6 +278,16 @@
             string? dailyForecastData = openWeatherAPI.DailyForecastData();
             await JS.InvokeVoidAsync("updateData", currentData, forecastData, dailyForecastData);
         }
+    }
+
+    [JSInvokableAttribute]
+    public async Task<string?> InsertPopupWeatherData(double longitude, double latitude)
+    {
+        if (openWeatherAPI is not null)
+        {
+            return await openWeatherAPI.FetchLocationData(longitude, latitude);
+        }
+        return null;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
