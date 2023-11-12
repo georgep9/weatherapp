@@ -132,7 +132,7 @@
 #weather-data-extra1 {
     z-index: 12;
     left: 5%;
-    top: 400px;
+    top: 385px;
     position: absolute;
     text-align: center;
     color: white;
@@ -150,7 +150,7 @@
 #weather-data-extra2 {
     z-index: 12;
     left: 5%;
-    top: 530px;
+    top: 500px;
     position: absolute;
     text-align: center;
     color: white;
@@ -168,7 +168,7 @@
 #map-layers-checkbox {
     z-index: 12;
     left: 5%;
-    top: 662px;
+    top: 617px;
     position: absolute;
     text-align: left;
     color: white;
