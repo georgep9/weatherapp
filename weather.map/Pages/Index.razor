@@ -56,8 +56,8 @@
             document.getElementById("weather-data-extra-feels-like").innerHTML = "Feels Like: " + Math.round(currentData.main.feels_like - 273.15) + "°C";
             document.getElementById("weather-data-extra-pressure").innerHTML = "Pressure: " + currentData.main.pressure + "hPa";
             document.getElementById("weather-data-extra-humidity").innerHTML = "Humidity: " + currentData.main.humidity + "%";
-            document.getElementById("weather-data-extra-sunset").innerHTML = "Sunset: " + formatAMPM(new Date(currentData.sys.sunset));
-            document.getElementById("weather-data-extra-sunrise").innerHTML = "Sunrise: " + formatAMPM(new Date(currentData.sys.sunrise));
+            document.getElementById("weather-data-extra-sunset").innerHTML = "Sunset: " + formatAMPM(new Date(currentData.sys.sunset * 1000));
+            document.getElementById("weather-data-extra-sunrise").innerHTML = "Sunrise: " + formatAMPM(new Date(currentData.sys.sunrise * 1000));
         }
 
         function UpdateHourlyForecastData(hourlyForecastData) {
@@ -70,11 +70,7 @@
                 var timeCell = foracastTable.rows[0].insertCell(i);
                 var iconCell = foracastTable.rows[1].insertCell(i);
                 var tempCell = foracastTable.rows[2].insertCell(i);
-                var date = new Date(data.dt * 1000);
-                var hours = date.getHours();
-                var minutes = "0" + date.getMinutes();
-                var formattedTime = hours + ':' + minutes.substr(-2);
-                timeCell.innerText = formattedTime;
+                timeCell.innerText = formatAMPM(new Date(data.dt * 1000));
                 iconCell.innerHTML = "<img src='https://openweathermap.org/img/wn/" + data.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
                 tempCell.innerText = Math.round(data.main.temp - 273.15) + "°C";
             }
@@ -88,7 +84,7 @@
                 var data = dailyForecastData.list[i];
                 console.log(data);
                 console.log(data.weather[0].icon);
-                var row = dailyForecastTable.insertRow(0);
+                var row = dailyForecastTable.insertRow(-1);
                 var timeCell = row.insertCell(0);
                 var iconCell = row.insertCell(1);
                 var tempCell = row.insertCell(2);
@@ -134,7 +130,7 @@
     </div>
     
     <div id="hourly-forecast">
-        <h4>Hourly Forecast</h4>
+        <h4>24Hr Forecast</h4>
         <div id="hourly-forecast-data">
             <table id="hourly-forecast-data-table" class="center">
                 <tr></tr>
