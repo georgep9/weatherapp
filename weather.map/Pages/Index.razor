@@ -9,31 +9,53 @@
           crossorigin="" />
     <script src="/leaflet.js" type="module"></script>
     <script type="module">
+
         var GLOBAL = {};
         GLOBAL.DotNetReference = null;
         window.setDotnetReference = (pDotNetReference) => {
             GLOBAL.DotNetReference = pDotNetReference;
         };
+
+        var map;
+        var mapLayers = {
+            "PRO": null,
+            "HRD0": null,
+            "CL": null
+        }
+
+        function addMapLayer(op) {
+            mapLayers[op] = L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/" + op + "/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
+                accessToken: '6718004e99fa5e8a92fd526818590b15'
+            }).addTo(map);
+        }
+
         window.loadMap = (lat, long) => {  
-            var map = leaflet.map('map').setView([lat, long], 6);
+            map = leaflet.map('map').setView([lat, long], 6);
             L.tileLayer("https://{s}.tile.jawg.io/jawg-lagoon/{z}/{x}/{y}{r}.png?access-token=2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU", {
                 attribution:
                     '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 accessToken: '2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU'
             }).addTo(map);
-            L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/PR0/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
-                accessToken: '6718004e99fa5e8a92fd526818590b15'
-            }).addTo(map);
-            L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/PAC0/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
-                accessToken: '6718004e99fa5e8a92fd526818590b15'
-            }).addTo(map);
-
+            addMapLayer("PR0");
+            addMapLayer("CL");
             map.on("moveend", () => {
                 var latlng = map.getCenter();
                 GLOBAL.DotNetReference.invokeMethodAsync("UpdateWeatherData", latlng.lng, latlng.lat);
             });
         }
+
+        window.checkboxInputHandler = (element) => {
+            console.log("here")
+            var checkbox = document.getElementById(element.id);
+            if (checkbox.checked) {
+                addMapLayer(element.value);
+            } else {
+                map.removeLayer(mapLayers[element.value]);
+            }
+        }
+
     </script>
+
     <script>
         function formatAMPM(date) {
             var hours = date.getHours();
@@ -120,6 +142,15 @@
                 <tr><td></td><td></td><td></td><td></td></tr>
             </table>
         </div>
+    </div>
+    <div id="map-layers-checkbox">
+        <h4>Map Layers</h4>
+        <input type="checkbox" id="precipitation-intensity-chkbox" value="PR0" checked="true" onclick="checkboxInputHandler(this)" />
+        <label for="precipitation-intensity-chkbox">Precipitation intensity</label><br>
+        <input type="checkbox" id="relative-humidity-chkbox" value="HRD0" onclick="checkboxInputHandler(this)" />
+        <label for="relative-humidity-chkbox">Relative Humidity</label><br>
+        <input type="checkbox" id="cloudiness-chkbox" value="CL" checked="true" onclick="checkboxInputHandler(this)" />
+        <label for="cloudiness-chkbox">Cloudiness</label>
     </div>
     <div id="weather-data-extra">
         <div id="weather-data-extra-feels-like"></div>

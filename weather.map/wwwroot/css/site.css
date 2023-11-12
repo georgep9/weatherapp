@@ -62,7 +62,7 @@
     z-index: 12;
     pointer-events: none;
     background: rgb(0,0,0, 0.6);
-    box-shadow: 0 0 10px 10px rgba(247, 250, 252, 0.8);
+    box-shadow: 0 0 5px 5px rgba(247, 250, 252, 0.8);
     border-radius: 20px;
     width: 250px;
     top: 50px;
@@ -143,6 +143,23 @@
     padding-top: 30px;
     padding-bottom: 30px;
     width: 250px;
+}
+
+#map-layers-checkbox {
+    z-index: 12;
+    left: 5%;
+    top: 560px;
+    position: absolute;
+    text-align: left;
+    color: white;
+    overflow-x: auto;
+    background: rgb(0,0,0, 0.6);
+    box-shadow: 0 0 5px 5px rgba(247, 250, 252, 0.8);
+    border-radius: 20px;
+    padding-bottom: 30px;
+    padding-left: 20px;
+    width: 100%;
+    max-width: 230px;
 }
 
 /* hide scrollbar but allow scrolling */
