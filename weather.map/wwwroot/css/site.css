@@ -67,6 +67,7 @@
     width: 250px;
     top: 50px;
     left: 5%;
+    height: 300px;
     padding-bottom: 20px;
 }
 
@@ -128,10 +129,10 @@
     padding: 10px;
 }
 
-#weather-data-extra {
+#weather-data-extra1 {
     z-index: 12;
     left: 5%;
-    top: 380px;
+    top: 400px;
     position: absolute;
     text-align: center;
     color: white;
@@ -143,12 +144,31 @@
     padding-top: 30px;
     padding-bottom: 30px;
     width: 250px;
+    height: 40px;
+}
+
+#weather-data-extra2 {
+    z-index: 12;
+    left: 5%;
+    top: 530px;
+    position: absolute;
+    text-align: center;
+    color: white;
+    overflow-x: auto;
+    pointer-events: none;
+    background: rgb(0,0,0, 0.6);
+    box-shadow: 0 0 5px 5px rgba(247, 250, 252, 0.8);
+    border-radius: 20px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    width: 250px;
+    height: 42px;
 }
 
 #map-layers-checkbox {
     z-index: 12;
     left: 5%;
-    top: 560px;
+    top: 662px;
     position: absolute;
     text-align: left;
     color: white;

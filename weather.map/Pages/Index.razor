@@ -70,15 +70,14 @@
         function UpdateCurrentData(currentData) {
             var currentData = JSON.parse(currentData);
             document.getElementById("weather-data-loc").innerHTML = currentData.name;
-            document.getElementById("weather-data-temp").innerHTML = Math.round(currentData.main.temp - 273.15) + "°C";
+            document.getElementById("weather-data-temp").innerHTML = "🌡️ " + Math.round(currentData.main.temp - 273.15) + "°C";
             document.getElementById("weather-data-icon").innerHTML = "<img src='https://openweathermap.org/img/wn/" + currentData.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
             document.getElementById("weather-data-desc").innerHTML = currentData.weather[0].description;
             document.getElementById("weather-data-hl").innerHTML = "H:" + Math.round(currentData.main.temp_max - 273.15) + "° L:" + Math.round(currentData.main.temp_min - 273.15) + "°";
-            document.getElementById("weather-data-extra-feels-like").innerHTML = "Feels Like: " + Math.round(currentData.main.feels_like - 273.15) + "°C";
             document.getElementById("weather-data-extra-pressure").innerHTML = "Pressure: " + currentData.main.pressure + "hPa";
             document.getElementById("weather-data-extra-humidity").innerHTML = "Humidity: " + currentData.main.humidity + "%";
-            document.getElementById("weather-data-extra-sunset").innerHTML = "Sunset: " + formatAMPM(new Date(currentData.sys.sunset * 1000));
-            document.getElementById("weather-data-extra-sunrise").innerHTML = "Sunrise: " + formatAMPM(new Date(currentData.sys.sunrise * 1000));
+            document.getElementById("weather-data-extra-sunrise").innerHTML = "🌅 Sunrise: " + formatAMPM(new Date(currentData.sys.sunrise * 1000));
+            document.getElementById("weather-data-extra-sunset").innerHTML = "🌇 Sunset: " + formatAMPM(new Date(currentData.sys.sunset * 1000));
         }
 
         function UpdateHourlyForecastData(hourlyForecastData) {
@@ -125,7 +124,7 @@
                     "<div id='tooltip-data'>" +
                     "<div><b>" + locationData.name + "</b></div>" +
                     "<img src='https://openweathermap.org/img/wn/" + locationData.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>" +
-                    "<h1>" + Math.round(locationData.main.temp - 273.15) + "°C" + "</h1>" +
+                    "<h1>🌡️ " + Math.round(locationData.main.temp - 273.15) + "°C" + "</h1>" +
                     "<div>" + locationData.weather[0].description + "</div>" +
                     "<div>" + "H: " + Math.round(locationData.main.temp_max - 273.15) + "° L: " + Math.round(locationData.main.temp_min - 273.15) + "°" + "</div>" +
                     "<div>Humidity: " + locationData.main.humidity + "%</div>" +
@@ -159,21 +158,22 @@
     </div>
     <div id="map-layers-checkbox">
         <h4>Map Layers</h4>
-        <input type="checkbox" id="atmospheric-pressure-chkbox" value="APM" onclick="checkboxInputHandler(this)" />
-        <label for="atmospheric-pressure-chkbox">Atmospheric pressure</label><br>
         <input type="checkbox" id="relative-humidity-chkbox" value="HRD0" onclick="checkboxInputHandler(this)" />
         <label for="relative-humidity-chkbox">Relative Humidity</label><br>
+        <input type="checkbox" id="atmospheric-pressure-chkbox" value="APM" onclick="checkboxInputHandler(this)" />
+        <label for="atmospheric-pressure-chkbox">Atmospheric pressure</label><br>
         <input type="checkbox" id="precipitation-intensity-chkbox" value="PR0" onclick="checkboxInputHandler(this)" />
         <label for="precipitation-intensity-chkbox">Precipitation intensity</label><br>
         <input type="checkbox" id="cloudiness-chkbox" value="CL" checked="true" onclick="checkboxInputHandler(this)" />
         <label for="cloudiness-chkbox">Cloudiness</label>
     </div>
-    <div id="weather-data-extra">
-        <div id="weather-data-extra-feels-like"></div>
+    <div id="weather-data-extra1">
         <div id="weather-data-extra-humidity"></div>
         <div id="weather-data-extra-pressure"></div>
-        <div id="weather-data-extra-sunset"></div>
+    </div>
+    <div id="weather-data-extra2">
         <div id="weather-data-extra-sunrise"></div>
+        <div id="weather-data-extra-sunset"></div>
     </div>
     
     <div id="hourly-forecast">
