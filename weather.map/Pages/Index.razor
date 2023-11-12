@@ -16,14 +16,18 @@
         };
         window.loadMap = (lat, long) => {  
             var map = leaflet.map('map').setView([lat, long], 6);
-            L.tileLayer("https://{s}.tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU", {
+            L.tileLayer("https://{s}.tile.jawg.io/jawg-lagoon/{z}/{x}/{y}{r}.png?access-token=2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU", {
                 attribution:
                     '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 accessToken: '2vhEyC3R5NE78zGZKRa0Ii1osq9ZbhAmM4v8UIVWf4wAWSvvD11GEQnxfCuNSzJU'
             }).addTo(map);
-            L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/CL/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
+            L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/PR0/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
                 accessToken: '6718004e99fa5e8a92fd526818590b15'
             }).addTo(map);
+            L.tileLayer("http://maps.openweathermap.org/maps/2.0/weather/PAC0/{z}/{x}/{y}?appid=6718004e99fa5e8a92fd526818590b15", {
+                accessToken: '6718004e99fa5e8a92fd526818590b15'
+            }).addTo(map);
+
             map.on("moveend", () => {
                 var latlng = map.getCenter();
                 GLOBAL.DotNetReference.invokeMethodAsync("UpdateWeatherData", latlng.lng, latlng.lat);
@@ -31,19 +35,38 @@
         }
     </script>
     <script>
-        window.updateData = (currentData, forecastData, dailyForecastData) => {
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
+        }
+
+        function UpdateCurrentData(currentData) {
             var currentData = JSON.parse(currentData);
             document.getElementById("weather-data-loc").innerHTML = currentData.name;
             document.getElementById("weather-data-temp").innerHTML = Math.round(currentData.main.temp - 273.15) + "°C";
             document.getElementById("weather-data-icon").innerHTML = "<img src='https://openweathermap.org/img/wn/" + currentData.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
             document.getElementById("weather-data-desc").innerHTML = currentData.weather[0].description;
             document.getElementById("weather-data-hl").innerHTML = "H:" + Math.round(currentData.main.temp_max - 273.15) + "° L:" + Math.round(currentData.main.temp_min - 273.15) + "°";
-            var forecastData = JSON.parse(forecastData);
+            document.getElementById("weather-data-extra-feels-like").innerHTML = "Feels Like: " + Math.round(currentData.main.feels_like - 273.15) + "°C";
+            document.getElementById("weather-data-extra-pressure").innerHTML = "Pressure: " + currentData.main.pressure + "hPa";
+            document.getElementById("weather-data-extra-humidity").innerHTML = "Humidity: " + currentData.main.humidity + "%";
+            document.getElementById("weather-data-extra-sunset").innerHTML = "Sunset: " + formatAMPM(new Date(currentData.sys.sunset));
+            document.getElementById("weather-data-extra-sunrise").innerHTML = "Sunrise: " + formatAMPM(new Date(currentData.sys.sunrise));
+        }
+
+        function UpdateHourlyForecastData(hourlyForecastData) {
+            var hourlyForecastData = JSON.parse(hourlyForecastData);
             var forecastLimit = 24; // forecast 24 hours
             var foracastTable = document.getElementById("hourly-forecast-data-table");
             foracastTable.innerHTML = "<tr></tr><tr></tr><tr></tr>";
             for (let i = 0; i < forecastLimit; i++) {
-                var data = forecastData.list[i];
+                var data = hourlyForecastData.list[i];
                 var timeCell = foracastTable.rows[0].insertCell(i);
                 var iconCell = foracastTable.rows[1].insertCell(i);
                 var tempCell = foracastTable.rows[2].insertCell(i);
@@ -55,6 +78,9 @@
                 iconCell.innerHTML = "<img src='https://openweathermap.org/img/wn/" + data.weather[0].icon + "&#64;" + "2x.png' unselectable='on'></img>";
                 tempCell.innerText = Math.round(data.main.temp - 273.15) + "°C";
             }
+        }
+
+        function UpdateDailyForecastData(dailyForecastData) {
             var dailyForecastData = JSON.parse(dailyForecastData);
             var dailyForecastTable = document.getElementById("daily-forecast-data-table");
             dailyForecastTable.innerHTML = "";
@@ -75,6 +101,12 @@
 
             }
         }
+
+        window.updateData = (currentData, hourlyForecastData, dailyForecastData) => {
+            UpdateCurrentData(currentData);
+            UpdateHourlyForecastData(hourlyForecastData);
+            UpdateDailyForecastData(dailyForecastData);
+        }
     </script>
 </head>
 <div id="container">
@@ -92,6 +124,13 @@
                 <tr><td></td><td></td><td></td><td></td></tr>
             </table>
         </div>
+    </div>
+    <div id="weather-data-extra">
+        <div id="weather-data-extra-feels-like"></div>
+        <div id="weather-data-extra-pressure"></div>
+        <div id="weather-data-extra-humidity"></div>
+        <div id="weather-data-extra-sunset"></div>
+        <div id="weather-data-extra-sunrise"></div>
     </div>
     
     <div id="hourly-forecast">
