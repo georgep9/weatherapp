@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @inject IJSRuntime JS
+@inject IHttpClientFactory ClientFactory
 
 <head>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -47,7 +48,6 @@
         }
 
         window.checkboxInputHandler = (element) => {
-            console.log("here")
             var checkbox = document.getElementById(element.id);
             if (checkbox.checked) {
                 addMapLayer(element.value);
@@ -102,8 +102,6 @@
             dailyForecastTable.innerHTML = "";
             for (let i = 0; i < dailyForecastData.list.length; i++) {
                 var data = dailyForecastData.list[i];
-                console.log(data);
-                console.log(data.weather[0].icon);
                 var row = dailyForecastTable.insertRow(-1);
                 var timeCell = row.insertCell(0);
                 var iconCell = row.insertCell(1);
@@ -193,7 +191,7 @@
 <script src="/leafletMap.js" type="module">
 </script>
 
-@inject IJSRuntime JS
+
 @code {
     private string? weatherData;
     private double defaultLongitude = 153.0260;
@@ -205,54 +203,34 @@
         private string? currentData;
         private string? forecastData;
         private string? dailyForecastData;
-        private double longtitude;
+        private double longitude;
         private double latitude;
-        private string apiKey = "6718004e99fa5e8a92fd526818590b15";
+        private readonly string baseUrl = "https://weather-map.delightfulriver-8119895b.australiaeast.azurecontainerapps.io/";
+        private HttpClient clientlocal;
 
-        public OpenWeatherAPI(double longitude, double latitude)
+
+        public OpenWeatherAPI(double longitude, double latitude, HttpClient clientLocal)
         {
+            this.clientlocal = clientLocal;
             this.SetLongitudeLatitude(longitude, latitude);
         }
 
         public void SetLongitudeLatitude(double longitude, double latitude)
         {
-            this.longtitude = longitude;
+            this.longitude = longitude;
             this.latitude = latitude;
-        }
-
-        private async Task<string> SendHttpRequest(string requestUri)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            request.Headers.Add("Accept", "application/json");
-            HttpClient client = new HttpClient();
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-            return responseBody;
         }
 
         public async Task<string> FetchLocationData(double longitude, double latitude)
         {
-            var requestUri = $"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={this.apiKey}";
-            return await SendHttpRequest(requestUri);
+            return await this.clientlocal.GetStringAsync($"{this.baseUrl}api/LocationData/{longitude}/{latitude}");
         }
 
-        private async Task FetchCurrentData()
-        {
-            this.currentData = await FetchLocationData(this.longtitude, this.latitude);
-        }
+        private async Task FetchCurrentData() => this.currentData = await FetchLocationData(this.longitude, this.latitude);
 
-        private async Task FetchForecastData()
-        {
-            var requestUri = $"https://pro.openweathermap.org/data/2.5/forecast/hourly?lat={this.latitude}&lon={this.longtitude}&appid={this.apiKey}";
-            this.forecastData = await SendHttpRequest(requestUri);
-        }
+        private async Task FetchForecastData() => this.forecastData = await this.clientlocal.GetStringAsync($"{this.baseUrl}api/ForecastHourlyData/{this.longitude}/{this.latitude}");
 
-        private async Task FetchDailyForecastData()
-        {
-            var requestUri = $"https://api.openweathermap.org/data/2.5/forecast/daily?lat={this.latitude}&lon={this.longtitude}&appid={this.apiKey}";
-            this.dailyForecastData = await SendHttpRequest(requestUri);
-        }
+        private async Task FetchDailyForecastData() => this.dailyForecastData = await this.clientlocal.GetStringAsync($"{this.baseUrl}api/ForecastDailyData/{this.longitude}/{this.latitude}");
 
         public async Task FetchWeatherData()
         {
@@ -295,7 +273,8 @@
         if (firstRender)
         {
             var lDotNetReference = DotNetObjectReference.Create(this);
-            openWeatherAPI = new OpenWeatherAPI(defaultLongitude, defaultLatitude);
+            var localHttpClient = ClientFactory.CreateClient("LocalApi");
+            openWeatherAPI = new OpenWeatherAPI(defaultLongitude, defaultLatitude, localHttpClient);
             await JS.InvokeVoidAsync("setDotnetReference", lDotNetReference);
             await JS.InvokeVoidAsync("loadMap", defaultLatitude, defaultLongitude);
             await UpdateWeatherData(this.defaultLongitude, this.defaultLatitude);

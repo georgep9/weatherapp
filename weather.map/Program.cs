@@ -1,12 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using weather.map.Pages.api;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
+builder.Services.AddSingleton<OpenWeatherMapAPI>();
+builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient("LocalApi", client => client.BaseAddress = new Uri("https://localhost:7196/"));
+
 var app = builder.Build();
+
 
 if (!app.Environment.IsDevelopment())
 {
@@ -15,11 +22,22 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+
+app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
 app.UseRouting();
 
+
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
